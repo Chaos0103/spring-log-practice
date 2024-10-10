@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: log
+  config:
+    activate:
+      on-profile: local
+
+logging:
+  level:
+    root: info
+    practice.log:
+      loggerfactory:
+        controller: debug
+

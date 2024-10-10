@@ -123,3 +123,90 @@ logging:
     file: #로그 파일에 사용될 로그 패턴
     dateformat: #로그의 date에 대한 디폴트 설정
 ```
+
+## 4. logback-spring.xml 로그 적용
+
+### 4-1. 기본 특징
+
+* 대소문자를 구분하지 않는다.
+* name attribute를 반드시 지정해야 한다.
+* logback-spring.xml은 appender와 logger 크게 두 개로 구분한다.
+* dynamic reloading 기능을 지원한다.
+
+### 4-2. appender
+
+> 로그의 형태를 설정, 로그 메시지가 출력될 대상을 결정하는 요소
+
+#### appender의 클래스 종류
+
+1. `ch.qos.logback.core.ConsoleAppender`: **콘솔**에 로그를 출력, 로그를 OutputStream에 작성하여 콘솔에 출력
+2. `ch.qos.logback.core.FileAppender`: **파일**에 로그를 출력, 최대 보관일수를 지정할 수 있음
+3. `ch.qos.logback.core.rolling.RollingFileAppender`: **여러개의 파일**을 롤링, 순회하면서 로그를 출력
+4. `ch.qos.logback.classic.net.SMTPAppender`: 로그를 **메일**로 전송
+5. `ch.qos.logback.classic.db.DBAppender`: **데이터베이스**에 로그를 저장
+
+### 4-3. root, logger
+
+> 설정한 appender를 참조하여 package와 level 설정
+
+1. root
+   * 전역 설정
+   * 지역적으로 선언된 logger 설정이 있다면 해당 logger 설정이 default로 적용
+2. logger
+   * 지역 설정
+   * additivity 값은 root 설정 상속 유무 설정 (default = true)
+
+### 4-4. property
+
+> 설정 파일에서 사용될 변수값 선언
+
+### 4-5. layout, encoder
+
+> 로그 출력 포맷 지정
+
+* Layout: 로그의 출력 포맷을 지정
+* encoder: Appender에 포함되어 사용자가 지정한 형식으로 표현될 로그메시지를 변환하는 역활을 담당
+  * 바이트를 소유하고 있는 Appender가 관리하는 OutputStream에 쓸 시간과 내용을 제어할 수 있음
+  * FileAppender와 하위 클래스는 encoder를 필요로 하고 더 이상 layout은 사용하지 않음
+
+### 4-6. pattern
+
+* `%Logger{length}`: Logger name을 축약할 수 있다. {length}는 최대 자리 수 `logger{35}`
+* `%-5level`: 로그 레벨, -5는 출력의 고정폭 값(5글자)
+* `%msg`, `%message`: 로그 메시지
+* `${PID:-}`: 프로세스 아이디
+* `%d`: 로그 기록시간
+* `%p`: 로깅 레벨
+* `%F`: 로깅이 발생한 프로그램 파일명
+* `%M`: 로깅이 발생한 메서드명
+* `%I`: 로깅이 발생한 호출지 정보
+* `%L`: 로깅이 발생한 호출지 라인 수
+* `%thread`: 현재 스레드명
+* `%t`: 로깅이 발생한 스레드명
+* `%c`: 로깅이 발생한 카테고리
+* `%C`: 로깅이 발생한 클래스명
+* `%m`: 로그 메시지
+* `%n`: 줄바꿈
+* `%%:` %출력
+* `%r`: 애플리케이션 시작 이후부터 로깅이 발생한 시점까지의 시간(ms)
+
+### 4-7. 기타
+
+* `<file>`
+  * 기록할 파일명과 경로를 설정
+* `<rollingPolicy class>`
+  * `ch.qos.logback.core.rolling.TimeBaseRollingPolicy`: 일자별 적용
+  * `ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP`: 일자 + 크기별 적용 (~ Springboot 3.3.3)
+  * `ch.qos.logback.core.rolling.SizeAndTimeBasedFileNamingAndTriggeringPolicy`: 일자 + 크기별 적용 (Springboot 3.3.4 ~)
+* `<fileNamePattern>`
+  * 파일 쓰기가 종료된 로그 파일명의 패턴을 지정
+  * `.gz`나 `.zip`으로 자동으로 압축할 수 있음
+* `<maxFileSize>`
+  * 한 파일당 최대 파일 용량을 지정
+  * 로그 내용의 크기도 IO 성능에 영향을 미치기 때문에 되도록이면 너무 크지 않은 사이즈로 지정하는 것이 좋음 (최대 10MB 내외 권장)
+  * 용량의 단위는 KB, MB, GB 3가지를 지정할 수 있음
+  * RollingFile 이름 패턴에 `.gz`나 `.zip`을 입력한 경우 로그 파일을 자동으로 압축해주는 기능도 있음
+* `<maxHistory>`
+  * 최대 파일 생성 갯수
+* `<Filter>`
+  * 해당 패키지에 무조건 로그를 찍는 것 말고도 필터링이 필요한 경우에 사용
